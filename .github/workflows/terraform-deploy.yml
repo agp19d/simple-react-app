@@ -49,10 +49,9 @@ jobs:
         id: output
         working-directory: infra
         run: |
+          terraform output
           storage_account_name=$(terraform output -raw storage_account_name | tr -d '\n')
-          cat $storage_account_name
           static_website_url=$(terraform output -raw static_website_url | tr -d '\n')
-          cat $static_website_url
           echo "storage_account_name=$storage_account_name" >> $GITHUB_ENV
           echo "static_website_url=$static_website_url" >> $GITHUB_ENV
         shell: bash
