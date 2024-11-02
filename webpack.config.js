@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   entry: './src/index.js',  // Entry point for the app
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'build'),  // Output to 'build' directory
     filename: 'bundle.js',
     publicPath: '/',        // Serve from root
   },
@@ -39,4 +39,3 @@ module.exports = {
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
 };
-
