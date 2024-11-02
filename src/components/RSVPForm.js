@@ -1,9 +1,9 @@
 // src/components/RSVPForm.js
 // Main form component for handling RSVP submissions, including name, email, and event selection.
 import React, { useState } from 'react';
+import { Form, Button, Container, Row, Col, Card } from 'react-bootstrap';
 import EventCheckboxGroup from './EventCheckboxGroup';
 import ConfirmationMessage from './ConfirmationMessage';
-
 
 /**
  * RSVPForm component renders a form for users to RSVP to events by entering their name, email, and selecting events.
@@ -45,21 +45,48 @@ function RSVPForm() {
   };
 
   return (
-    <div className="rsvp-form-container">
-      <h1>Event RSVP</h1>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="name">Name:</label>
-        <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+    <Container>
+      <Row className="justify-content-md-center">
+        <Col>
+          <Card style={{ width: '36rem' }} className="shadow-lg p-4">
+            <Card.Body>
+              <h2 className="text-center mb-4">Event RSVP</h2>
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3" controlId="name">
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </Form.Group>
 
-        <label htmlFor="email">Email:</label>
-        <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <Form.Group className="mb-3" controlId="email">
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </Form.Group>
 
-        <EventCheckboxGroup selectedEvents={selectedEvents} onEventSelection={handleEventSelection} />
+                <EventCheckboxGroup
+                  selectedEvents={selectedEvents}
+                  onEventSelection={handleEventSelection}
+                />
 
-        <button type="submit">Submit RSVP</button>
-      </form>
-      <ConfirmationMessage show={showConfirmation} />
-    </div>
+                <Button variant="primary" type="submit" className="w-100 mt-4">
+                  Submit RSVP
+                </Button>
+              </Form>
+              <ConfirmationMessage show={showConfirmation} />
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 }
 

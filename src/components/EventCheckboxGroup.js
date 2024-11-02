@@ -1,6 +1,7 @@
 // src/components/EventCheckboxGroup.js
 // Renders a group of checkboxes for selecting events.
 import React from 'react';
+import { Form } from 'react-bootstrap';
 
 /**
  * EventCheckboxGroup component renders a group of checkboxes representing events.
@@ -16,20 +17,22 @@ function EventCheckboxGroup({ selectedEvents, onEventSelection }) {
   const events = ["Event 1", "Event 2", "Event 3"];
 
   return (
-    <div className="checkbox-group">
-      <p>Choose Events to RSVP:</p>
-      {events.map(event => (
-        <label key={event}>
-          <input
+    <Form.Group className="mb-3">
+      <Form.Label>Choose Events to RSVP:</Form.Label>
+      <div>
+        {events.map(event => (
+          <Form.Check
+            key={event}
             type="checkbox"
+            label={event}
             value={event}
             checked={selectedEvents.includes(event)}
             onChange={onEventSelection}
+            className="mb-2"
           />
-          {event}
-        </label>
-      ))}
-    </div>
+        ))}
+      </div>
+    </Form.Group>
   );
 }
 
