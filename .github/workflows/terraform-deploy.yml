@@ -75,6 +75,9 @@ jobs:
 
       - name: Build the app
         run: npm run build
+        
+      - name: List build directory contents (for debugging)
+        run: ls -la ./build
 
       - name: Upload files to Azure Storage
         uses: azure/CLI@v1
