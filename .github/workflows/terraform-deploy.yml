@@ -71,4 +71,4 @@ jobs:
             az storage blob upload-batch --account-name "${{ env.storage_account_name }}" -s ./build -d '$web'
       
       - name: Show Static Website URL
-        run: echo "Your site is live at: ${{ env.static_website_url }}"
+        run: echo "Your site is live"
