@@ -11,20 +11,3 @@ variable "resource_group_location" {
   description = "Location of the resource group."
   default     = "eastus"
 }
-
-variable "subscription_id" {
-  description = "Azure Subscription ID"
-}
-
-variable "client_id" {
-  description = "Azure Client ID for authentication"
-}
-
-variable "client_secret" {
-  description = "Azure Client Secret for authentication"
-  sensitive = true
-}
-
-variable "tenant_id" {
-  description = "Azure Tenant ID"
-}
