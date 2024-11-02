@@ -7,10 +7,6 @@ output "storage_account_name" {
   value = azurerm_storage_account.storage.name
 }
 
-output "primary_web_host" {
-  value = azurerm_storage_account.storage.primary_web_host
-}
-
 output "static_website_url" {
   value = azurerm_storage_account.storage.primary_web_host
   description = "The URL of the static website."
