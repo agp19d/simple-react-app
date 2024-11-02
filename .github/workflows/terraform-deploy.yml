@@ -25,21 +25,17 @@ jobs:
           terraform_version: 1.0.0
 
       - name: Initialize Terraform
+        working-directory: infra  # Run terraform from the infra directory
         run: terraform init
 
       - name: Apply Terraform
         id: apply
+        working-directory: infra
         run: terraform apply -auto-approve
-        # Capture the Terraform outputs as environment variables
-        env:
-          TF_VAR_storage_account_name: ${{ steps.apply.outputs.storage_account_name }}
-          TF_VAR_static_website_url: ${{ steps.apply.outputs.static_website_url }}
 
+      # You can capture outputs here for use in deploy job
       - name: Output Storage Account Name
-        run: echo "Storage Account Name: ${{ env.TF_VAR_storage_account_name }}"
-      
-      - name: Output Static Website URL
-        run: echo "Static Website URL: ${{ env.TF_VAR_static_website_url }}"
+        run: echo "Storage Account Name: ${{ steps.apply.outputs.storage_account_name }}"
 
   deploy:
     name: Build and Deploy React App
