@@ -4,20 +4,21 @@ on:
   push:
     branches:
       - main
-env:
-    ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-    ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-    ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
 jobs:
-
   terraform:
     name: Set up Azure Storage with Terraform
     runs-on: ubuntu-latest
+
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
     outputs:
-        STORAGE_ACCOUNT_NAME: ${{ steps.set-storage-account.outputs.STORAGE_ACCOUNT_NAME }}
-        STATIC_WEBSITE_URL: ${{ steps.set-static-website.outputs.STATIC_WEBSITE_URL }}
+      storage_account_name: ${{ steps.set-storage-account.outputs.storage_account_name }}
+      static_website_url: ${{ steps.set-static-website.outputs.static_website_url }}
 
     steps:
       - name: Checkout code
@@ -41,31 +42,22 @@ jobs:
         id: set-storage-account
         working-directory: infra
         run: |
-          storage_account_name=$(terraform output -raw storage_account_name | tr -d '\n\r')
-          echo "STORAGE_ACCOUNT_NAME=$storage_account_name" >> "$GITHUB_OUTPUT"
-        shell: bash
+          echo "storage_account_name=$(terraform output -raw storage_account_name)" >> "$GITHUB_OUTPUT"
 
       - name: Capture static website URL
         id: set-static-website
         working-directory: infra
         run: |
-          static_website_url=$(terraform output -raw static_website_url | tr -d '\n\r')
-          echo "STATIC_WEBSITE_URL=$static_website_url" >> "$GITHUB_OUTPUT"
-        shell: bash
+          echo "static_website_url=$(terraform output -raw static_website_url)" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Build and Deploy React App
     runs-on: ubuntu-latest
-    needs: [terraform]
+    needs: terraform
 
-    
-    steps:  
+    steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      
-      - name: Echo environment variables
-        run: |
-          echo "STORAGE_ACCOUNT_NAME is: ${{ needs.terraform.outputs.STORAGE_ACCOUNT_NAME }}"
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
@@ -86,7 +78,7 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az storage blob upload-batch --account-name "${{ needs.terraform.outputs.STORAGE_ACCOUNT_NAME }}" -s ./build -d '$web'
+            az storage blob upload-batch --account-name "${{ needs.terraform.outputs.storage_account_name }}" -s ./build -d '$web'
 
       - name: Show Static Website URL
-        run: echo "Your site is live at ${{ needs.terraform.outputs.STATIC_WEBSITE_URL }}"
+        run: echo "Your site is live at ${{ needs.terraform.outputs.static_website_url }}"
