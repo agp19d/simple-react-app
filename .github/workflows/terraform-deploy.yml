@@ -42,13 +42,15 @@ jobs:
         id: set-storage-account
         working-directory: infra
         run: |
-          echo "storage_account_name=$(terraform output -raw storage_account_name)" >> "$GITHUB_OUTPUT"
+          storage_account_name="$(terraform output -raw storage_account_name | tr -d '\r\n')"
+          echo "storage_account_name=$storage_account_name" >> "$GITHUB_OUTPUT"
 
       - name: Capture static website URL
         id: set-static-website
         working-directory: infra
         run: |
-          echo "static_website_url=$(terraform output -raw static_website_url)" >> "$GITHUB_OUTPUT"
+          static_website_url="$(terraform output -raw static_website_url | tr -d '\r\n')"
+          echo "static_website_url=$static_website_url" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Build and Deploy React App
@@ -72,6 +74,11 @@ jobs:
 
       - name: List build directory contents
         run: ls -la ./build
+
+      - name: Print Terraform Outputs
+        run: |
+          echo "Storage Account Name: ${{ needs.terraform.outputs.storage_account_name }}"
+          echo "Static Website URL: ${{ needs.terraform.outputs.static_website_url }}"
 
       - name: Upload files to Azure Storage
         uses: azure/CLI@v1
