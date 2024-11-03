@@ -88,4 +88,5 @@ jobs:
             az storage blob upload-batch --account-name "${{ needs.terraform.outputs.storage_account }}" -s ./build -d '$web'
 
       - name: Show Static Website URL
-        run: echo "Your site is live at: ${{ needs.terraform.outputs.static_website_url }}"
+        run: |
+          echo "Your site is live at: ${{ needs.terraform.outputs.static_website_url }}"
