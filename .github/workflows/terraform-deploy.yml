@@ -39,7 +39,7 @@ jobs:
         working-directory: infra
         run: |
           storage_account_name=$(terraform output -raw storage_account_name | tr -d '\n\r')
-          echo "storage_account_name=$storage_account_name" >> $GITHUB_ENV
+          echo "STORAGE_ACCOUNT_NAME=$storage_account_name" >> $GITHUB_ENV
         shell: bash
 
       - name: Capture static website URL
@@ -47,7 +47,7 @@ jobs:
         working-directory: infra
         run: |
           static_website_url=$(terraform output -raw static_website_url | tr -d '\n\r')
-          echo "static_website_url=$static_website_url" >> $GITHUB_ENV
+          echo "STATIC_WEBSITE_URL=$static_website_url" >> $GITHUB_ENV
         shell: bash
 
   deploy:
@@ -81,4 +81,4 @@ jobs:
             az storage blob upload-batch --account-name "$STORAGE_ACCOUNT_NAME" -s ./build -d '$web'
 
       - name: Show Static Website URL
-        run: echo "Your site is live"
+        run: echo "Your site is live at $STATIC_WEBSITE_URL"
