@@ -43,8 +43,10 @@ jobs:
         run: |
           storage_account_name=$(terraform output -raw storage_account_name)
           echo "storage_account_name=$storage_account_name" >> $GITHUB_ENV
-          echo "::set-output name=storage_account_name::$storage_account_name"
+          echo "storage_account_name=$storage_account_name" 
         shell: bash
+        outputs:
+          storage_account_name: ${{ steps.set-storage-account.outputs.storage_account_name }}
 
       - name: Capture static website URL
         id: set-static-website
@@ -52,8 +54,10 @@ jobs:
         run: |
           static_website_url=$(terraform output -raw static_website_url)
           echo "static_website_url=$static_website_url" >> $GITHUB_ENV
-          echo "::set-output name=static_website_url::$static_website_url"
+          echo "static_website_url=$static_website_url" 
         shell: bash
+        outputs:
+          static_website_url: ${{ steps.set-static-website.outputs.static_website_url }}
 
   deploy:
     name: Build and Deploy React App
