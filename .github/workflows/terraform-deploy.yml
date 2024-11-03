@@ -3,14 +3,16 @@ name: Terraform Deploy to Azure Storage
 on:
   push:
     branches:
-      - main  # Trigger the workflow on push to the main branch
+      - main
 
 jobs:
   terraform:
     name: Set up Azure Storage with Terraform
     runs-on: ubuntu-latest
+    outputs:
+      storage_account: ${{ steps.set-output.outputs.storage_account }}
+      static_website_url: ${{ steps.set-output.outputs.static_website_url }}
 
-    # Set environment variables for Terraform provider authentication
     env:
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
@@ -27,39 +29,38 @@ jobs:
           terraform_version: 1.0.0
 
       - name: Initialize Terraform
-        working-directory: infra  # Run terraform from the infra directory
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        working-directory: infra
         run: terraform init
 
       - name: Apply Terraform
         id: apply
         working-directory: infra
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform apply -auto-approve
 
-      - name: Capture Terraform Outputs
-        id: output
+      - name: Capture storage account
+        id: set-storage-account
         working-directory: infra
         run: |
-          terraform output
-          storage_account_name=$(terraform output -raw storage_account_name | tr -d '\n')
-          static_website_url=$(terraform output -raw static_website_url | tr -d '\n')
+          storage_account_name=$(terraform output -raw storage_account_name)
           echo "storage_account_name=$storage_account_name" >> $GITHUB_ENV
+
+      - name: Capture static website
+        id: set-static-website
+        working-directory: infra
+        run: |
+          static_website_url=$(terraform output -raw static_website_url)
           echo "static_website_url=$static_website_url" >> $GITHUB_ENV
-        shell: bash
+
+      - name: Set output
+        id: set-output
+        run: |
+          echo "storage_account=${{ steps.set-storage-account.outputs.storage_account_name }}" >> $GITHUB_ENV
+          echo "static_website_url=${{ steps.set-static-website.outputs.static_website_url }}" >> $GITHUB_ENV
 
   deploy:
     name: Build and Deploy React App
     runs-on: ubuntu-latest
-    needs: terraform  # Ensure this job waits for the terraform job to complete
+    needs: terraform
 
     steps:
       - name: Checkout code
@@ -68,14 +69,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18'  # Use the Node.js version matching your project
+          node-version: '18'
 
       - name: Install dependencies
         run: npm install
 
       - name: Build the app
         run: npm run build
-        
+
       - name: List build directory contents (for debugging)
         run: ls -la ./build
 
@@ -84,7 +85,7 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az storage blob upload-batch --account-name "${{ env.storage_account_name }}" -s ./build -d '$web'
-      
+            az storage blob upload-batch --account-name "${{ needs.terraform.outputs.storage_account }}" -s ./build -d '$web'
+
       - name: Show Static Website URL
-        run: echo "Your site is live"
+        run: echo "Your site is live at: ${{ needs.terraform.outputs.static_website_url }}"
