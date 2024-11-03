@@ -9,9 +9,6 @@ jobs:
   terraform:
     name: Set up Azure Storage with Terraform
     runs-on: ubuntu-latest
-    outputs:
-      storage_account: ${{ steps.set-storage-account.outputs.storage_account_name }}
-      static_website_url: ${{ steps.set-static-website.outputs.static_website_url }}
 
     env:
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -41,7 +38,7 @@ jobs:
         id: set-storage-account
         working-directory: infra
         run: |
-          storage_account_name=$(terraform output -raw storage_account_name)
+          storage_account_name=$(terraform output -raw storage_account_name | tr -d '\n\r')
           echo "storage_account_name=$storage_account_name" >> $GITHUB_ENV
         shell: bash
 
@@ -49,7 +46,7 @@ jobs:
         id: set-static-website
         working-directory: infra
         run: |
-          static_website_url=$(terraform output -raw static_website_url)
+          static_website_url=$(terraform output -raw static_website_url | tr -d '\n\r')
           echo "static_website_url=$static_website_url" >> $GITHUB_ENV
         shell: bash
 
@@ -81,7 +78,7 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az storage blob upload-batch --account-name "${{ needs.terraform.outputs.storage_account }}" -s ./build -d '$web'
+            az storage blob upload-batch --account-name "$storage_account_name" -s ./build -d '$web'
 
       - name: Show Static Website URL
-        run: echo "Your site is live at ${{ needs.terraform.outputs.static_website_url }}"
+        run: echo "Your site is live"
