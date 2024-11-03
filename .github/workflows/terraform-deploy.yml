@@ -42,14 +42,14 @@ jobs:
         id: set-storage-account
         working-directory: infra
         run: |
-          storage_account_name="$(terraform output -raw storage_account_name | tr -d '\r\n')"
+          storage_account_name=$(terraform output -raw storage_account_name 2>/dev/null | tr -d '\r\n')
           echo "storage_account_name=$storage_account_name" >> "$GITHUB_OUTPUT"
 
       - name: Capture static website URL
         id: set-static-website
         working-directory: infra
         run: |
-          static_website_url="$(terraform output -raw static_website_url | tr -d '\r\n')"
+          static_website_url=$(terraform output -raw static_website_url 2>/dev/null | tr -d '\r\n')
           echo "static_website_url=$static_website_url" >> "$GITHUB_OUTPUT"
 
   deploy:
@@ -85,7 +85,7 @@ jobs:
         with:
           inlineScript: |
             az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            az storage blob upload-batch --account-name "${{ needs.terraform.outputs.storage_account_name }}" -s ./build -d '$web'
+            az storage blob upload-batch --account-name "${{ needs.terraform.outputs.storage_account_name }}" -s ./build -d '$web' --auth-mode login
 
       - name: Show Static Website URL
         run: echo "Your site is live at ${{ needs.terraform.outputs.static_website_url }}"
