@@ -3,10 +3,17 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 2.9.0" # Ensure this is set to 2.9.0 or later
+      version = "~>3.0"
     }
   }
+  backend "azurerm" {
+    resource_group_name  = "rg-terraform"
+    storage_account_name = "satfstate1928"
+    container_name       = "tfstate"
+    key                  = "terraform.tfstate"
+  }
 }
+
 
 provider "azurerm" {
   features {}
