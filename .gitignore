@@ -82,6 +82,7 @@ Icon?
 *.gz
 *.sql
 *.sqlite
+load-env.ps1
 
 # Coverage directory used by tools like istanbul
 coverage/
